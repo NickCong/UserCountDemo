@@ -1,9 +1,38 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿
+@Styles.Render("~/Content/CSS/index.css")
+<div>
+    @{ for (int i = 1; i < 7; i++)
+            {
+                string a = string.Format("Content/Images/player0{0}.jpg", i);
+            <div class="col-md-4 col-sm-6 col-xs-6 player">
+                <div class="post-thumb">
+                    <img src="@a" alt="">
+                    <div class="title-over">
+                        <button click="Vote(@i)">Vote</button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+</div>
+@section home{
+    <script type="text/javascript">
+    $(document).ready(function () {
+        if ("@ViewBag.IsAuthentication" == "False")
+    {
+        $("<div id='shade' title='Please Login in!'></div>").css({
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            backgroundColor: "#808080",
+            height: '100%',
+            width:'100%',
+            opacity: 0.7,
+            zIndex: 300}).appendTo(".content-page");
+    }
+    })
+
+    </script>
 }
 
-
-
-<div class="row">
-    hello world
-</div>
