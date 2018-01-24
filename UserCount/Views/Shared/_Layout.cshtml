@@ -87,15 +87,15 @@
                                 </div>
                             </div>
 
-                            <form class="login-email">
+                            <form class="login-email form-group">
                                 <div class="login-info">
                                     <label class="text-warning" hidden id="login-waring"></label>
                                 </div>
                                 <div class="login-info">
-                                    <input required autofocus="" id="email" type="email" name="email" placeholder="Email">
+                                    <input class="form-control" required autofocus="" id="email" type="email" name="email" placeholder="Email">
                                 </div>
                                 <div class="login-info">
-                                    <input required id="password" type="password" name="password" placeholder="Password">
+                                    <input class="form-control" required id="password" type="password" name="password" placeholder="Password">
                                 </div>
                                 <div class="submit-buttons">
                                     <button class="btn text-uppercase" id="login">
@@ -112,13 +112,23 @@
                     <div class="widget" id="userinfo" hidden>
                         <h4 class="title">User Detail</h4>
                         <div class="content tag-cloud">
-                            <img src="~/Content/Images/logo.jpg" click="changephoto()" />
-                            <label for="detailemail">Email:</label><span id="detailemail" name="detailemail"></span>
-                            <label for="detailpersonalurl">Personal Url:</label><span id="detailpersonalurl" name="detailpersonalurl"></span>
-                            <button>Change Password</button>
-                            <label for="detailnewpassword">New Password:</label><span id="detailnewpassword" name="detailnewpassword"></span>
-                            <label for="detailconfirmpassword">Confirm Password:</label><span id="detailconfirmpassword" name="detailconfirmpassword"></span>
-                            <label for="detailemail">Phone Number:</label><span id="detailemail" name="detailemail"></span>
+                            <div>
+                                <img class="detailpicture" src="~/Content/Images/unauthentic.jpg" click="changephoto()" />
+                            </div>
+                            <div>
+                                <label for="detailemail">Email:</label><input type="email" id="detailemail" name="detailemail"></input>
+                            </div>
+                            <div>
+                                <label for="detailpersonalurl">Personal Url:</label><span id="detailpersonalurl" name="detailpersonalurl"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="detailnewpassword">New Password:</label><input type="password" id="detailnewpassword" name="detailnewpassword"></input>
+                                <label for="detailconfirmpassword">Confirm Password:</label><input id="detailconfirmpassword" name="detailconfirmpassword"></input>
+                                <button>Reset Password</button>
+                            </div>
+                            <div>
+                                <label for="detailphone">Phone Number:</label><input type="tel" id="detailphone" name="detailphone"></input>
+                            </div>
                         </div>
                     </div>
                 </aside>
@@ -171,7 +181,8 @@
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @Scripts.Render("~/Scripts/bootstrapValidator.js")
-    <script src="~/Scripts/layout/layout.js"></script>
+    @Scripts.Render("~/Scripts/jquery.session.js")
+    @Scripts.Render("~/Scripts/layout/layout.js")
     @RenderSection("scripts", required: false)
     @RenderSection("home", required: false)
 </body>

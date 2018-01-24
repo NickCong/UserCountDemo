@@ -63,8 +63,8 @@ namespace UserCountAPI.Controllers
                             TableName = TABLEName,
                             Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = email } } },
                             ExpressionAttributeNames = new Dictionary<string, string> { { "#reference", "Reference" }, { "#duplicateReference", "DuplicateReference" } },
-                            ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { NS = reference } }, { ":newDuplicateReference", new AttributeValue { NS = duplicateReference } } },
-                            UpdateExpression = "SET #reference = :newReference;#duplicateReference = :newDuplicateReference;"
+                            ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } }, { ":newDuplicateReference", new AttributeValue { SS = duplicateReference } } },
+                            UpdateExpression = "SET #reference = :newReference,#duplicateReference = :newDuplicateReference;"
                         };
                         client.UpdateItem(sourceRequest);
                     }
@@ -92,8 +92,8 @@ namespace UserCountAPI.Controllers
                     TableName = TABLEName,
                     Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = "Domain" } } },
                     ExpressionAttributeNames = new Dictionary<string, string> { { "#reference", "Reference" }, { "#duplicateReference", "DuplicateReference" } },
-                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { NS = reference } },{ ":newDuplicateReference", new AttributeValue { NS = duplicateReference } } },
-                    UpdateExpression = "SET #reference = :newReference;#duplicateReference = :newDuplicateReference;"
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } },{ ":newDuplicateReference", new AttributeValue { SS = duplicateReference } } },
+                    UpdateExpression = "SET #reference = :newReference,#duplicateReference = :newDuplicateReference;"
                 };
                 client.UpdateItem(updateRequest);
             }

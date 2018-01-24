@@ -81,7 +81,7 @@ namespace UserCount.Controllers
                         { ":newSourceID", new AttributeValue { S = sourceID } },
                         { ":newPersonalID", new AttributeValue { S = personalID } }
                     },
-                    UpdateExpression = "SET #password = :newPassword; #sourceID = :newSourceID; #personalID = :newPersonalID"
+                    UpdateExpression = "SET #password = :newPassword, #sourceID = :newSourceID, #personalID = :newPersonalID"
                 };
                 client.UpdateItem(request);
                 if (sourceID.Equals(ConfigurationManager.AppSettings["DomainSourceID"]))
@@ -134,7 +134,7 @@ namespace UserCount.Controllers
                                 TableName = TABLEName,
                                 Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = email } } },
                                 ExpressionAttributeNames = new Dictionary<string, string> { { "#sourceReference", "SourceReference" } },
-                                ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { NS = sourceReference } } },
+                                ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { SS = sourceReference } } },
                                 UpdateExpression = "SET #sourceReference = :newSourceReference"
                             };
                             client.UpdateItem(sourceRequest);
@@ -152,16 +152,20 @@ namespace UserCount.Controllers
             try
             {
                 var domain = usertable.GetItem("Domain");
-                List<string> sourceReference = domain["SourceReference"] != null ? domain["SourceReference"].AsListOfString() : new List<string>();               
-                var updateRequest = new UpdateItemRequest
+                List<string> sourceReference = domain["SourceReference"] != null ? domain["SourceReference"].AsListOfString() : new List<string>();
+                if (!sourceReference.Contains(referenceID))
                 {
-                    TableName = TABLEName,
-                    Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = "Domain" } } },
-                    ExpressionAttributeNames = new Dictionary<string, string> { { "#sourceReference", "SourceReference" } },
-                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { NS = sourceReference } } },
-                    UpdateExpression = "SET #sourceReference = :newSourceReference"
-                };
-                client.UpdateItem(updateRequest);                                      
+                    sourceReference.Add(referenceID);
+                    var updateRequest = new UpdateItemRequest
+                    {
+                        TableName = TABLEName,
+                        Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = "Domain" } } },
+                        ExpressionAttributeNames = new Dictionary<string, string> { { "#sourceReference", "SourceReference" } },
+                        ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { SS = sourceReference } } },
+                        UpdateExpression = "SET #sourceReference = :newSourceReference"
+                    };
+                    client.UpdateItem(updateRequest);
+                }
             }
             catch (Exception e)
             {
@@ -198,7 +202,7 @@ namespace UserCount.Controllers
                     {
                         detail.result = true;
                         detail.email = email;
-                        detail.personalurl = user.ContainsKey("SourceID") ? ConfigurationManager.AppSettings["DomainURL"] + "/" + user["SourceID"].AsString() : string.Empty;
+                        detail.personalurl = user.ContainsKey("PersonalID") ? ConfigurationManager.AppSettings["DomainURL"] + "/" + user["PersonalID"].AsString() : string.Empty;
                         detail.phonenumber = user.ContainsKey("PhoneNumber") ? user["PhoneNumber"].AsString() : string.Empty;
                         detail.picture = user.ContainsKey("Picture") ? user["Picture"].AsString() : string.Empty;
                     }                    

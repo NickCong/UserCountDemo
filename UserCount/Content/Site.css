@@ -81,7 +81,9 @@
     position: relative;
     overflow: hidden;
 }
-
+.login-email small{
+    margin:5px 16px 10px 16px
+}
 .icons-size {
     width: 18px;
     height: 18px;
@@ -123,7 +125,11 @@
 .submit-buttons button {
     width: 94px;
     margin-left: 20px;
-} 
+}
+.detailpicture {
+    width:100px;
+    border-radius:50%;
+}
 .sidebar .widget {
     background: #ffffff;
     padding: 21px 30px;

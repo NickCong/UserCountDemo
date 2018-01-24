@@ -20,11 +20,13 @@ namespace UserCount.Controllers
             if (string.IsNullOrEmpty(email))
             {
                 ViewBag.IsAuthentication = false;
-            }
+            } 
             else
             {
                 UserDetail result = helper.CheckUser(email, enpassword);
                 ViewBag.IsAuthentication = result.result;
+                ViewBag.Email = email;
+                ViewBag.Password = enpassword;
             }
             return View();
         }
@@ -45,6 +47,14 @@ namespace UserCount.Controllers
         }
 
         [HttpPost]
+        public JsonResult GetUser(string email, string password)
+        {
+            AWSDynamoDBHelper helper = new AWSDynamoDBHelper();
+            UserDetail result = helper.CheckUser(email, password);
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
         public JsonResult Register(string email, string password, string source)
         {
             AWSDynamoDBHelper helper = new AWSDynamoDBHelper();
@@ -57,7 +67,7 @@ namespace UserCount.Controllers
             }
             else
             {
-                string personalID = new Guid().ToString();
+                string personalID = Guid.NewGuid().ToString();
                 string sourceID = string.Empty;
                 string baseurl = ConfigurationManager.AppSettings["DomainURL"];
                 if (source.Length > baseurl.Length)
@@ -80,7 +90,7 @@ namespace UserCount.Controllers
                 {
                     sourceID = ConfigurationManager.AppSettings["DomainSourceID"];
                 }
-                helper.CreateUser(email, password, sourceID, personalID);
+                helper.CreateUser(email, enpassword, sourceID, personalID);
                 if (detail.result)
                 {
                     Session["email"] = email;
