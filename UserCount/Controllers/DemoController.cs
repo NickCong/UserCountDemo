@@ -10,9 +10,9 @@ using System.Web.Mvc;
 
 namespace UserCount.Controllers
 {
-    public class HomeController : Controller
+    public class DemoController : Controller
     {
-        public ActionResult Index()
+        public ActionResult Home()
         {
             AWSDynamoDBHelper helper = new AWSDynamoDBHelper();
             string email = Session["email"] == null?string.Empty: Session["email"].ToString();
@@ -55,7 +55,7 @@ namespace UserCount.Controllers
         }
 
         [HttpPost]
-        public JsonResult Register(string email, string password, string source)
+        public JsonResult Register(string email, string password)
         {
             AWSDynamoDBHelper helper = new AWSDynamoDBHelper();
             UserDetail detail = new UserDetail();
@@ -68,28 +68,12 @@ namespace UserCount.Controllers
             else
             {
                 string personalID = Guid.NewGuid().ToString();
-                string sourceID = string.Empty;
                 string baseurl = ConfigurationManager.AppSettings["DomainURL"];
-                if (source.Length > baseurl.Length)
-                {
-                    if (source.Substring(ConfigurationManager.AppSettings["DomainURL"].Length).IndexOf("/") > 0)
-                    {
-                        string temp = source.Substring(ConfigurationManager.AppSettings["DomainURL"].Length);
-                        sourceID = temp.Substring(temp.IndexOf("/"));
-                    }
-                    else
-                    {
-                        sourceID = source.Substring(ConfigurationManager.AppSettings["DomainURL"].Length);
-                    }
-                }
+                string sourceID = RouteData.Values["id"] !=null? RouteData.Values["id"].ToString(): ConfigurationManager.AppSettings["DomainSourceID"];
                 detail.result = true;
                 detail.email = email;
                 detail.password = enpassword;
-                detail.personalurl = baseurl + "/" + personalID;
-                if (string.IsNullOrEmpty(sourceID))
-                {
-                    sourceID = ConfigurationManager.AppSettings["DomainSourceID"];
-                }
+                detail.personalurl = baseurl + "/" + personalID+"/Home";              
                 helper.CreateUser(email, enpassword, sourceID, personalID);
                 if (detail.result)
                 {
@@ -169,8 +153,20 @@ namespace UserCount.Controllers
 
         public ActionResult Report()
         {
-            ViewBag.Message = "Your report page.";
-
+            AWSDynamoDBHelper helper = new AWSDynamoDBHelper();
+            string email = Session["email"] == null ? string.Empty : Session["email"].ToString();
+            string enpassword = Session["password"] == null ? string.Empty : Session["password"].ToString();
+            if (string.IsNullOrEmpty(email))
+            {
+                ViewBag.IsAuthentication = false;
+            }
+            else
+            {
+                UserDetail result = helper.CheckUser(email, enpassword);
+                ViewBag.IsAuthentication = result.result;
+                ViewBag.Email = email;
+                ViewBag.Password = enpassword;
+            }
             return View();
         }
     }

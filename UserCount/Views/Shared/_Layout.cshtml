@@ -9,6 +9,8 @@
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
     @Scripts.Render("~/Content/bootstrapValidator.css")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
 </head>
 <body class="home-template">
     <!-- start header -->
@@ -38,9 +40,9 @@
                 </div>
                 <div class="collapse navbar-collapse" id="main-menu" aria-expanded="true" style="">
                     <ul class="nav navbar-nav">
-                        <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                        <li>@Html.ActionLink("Report", "Report", "Home")</li>
-                        <li>@Html.ActionLink("About", "About", "Home")</li>
+                        <li>@Html.ActionLink("Home", "Home", "Demo")</li>
+                        <li>@Html.ActionLink("Report", "Report", "Demo")</li>
+                        <li>@Html.ActionLink("About", "About", "Demo")</li>
                     </ul>
                 </div>
             </div>
@@ -172,18 +174,52 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-12">
-                    <span>Copyright © <a href="http://localhost:51359/Home">User Count Demo</a></span> |
+                    <span>Copyright © <a href="http://localhost:51359/Demo">User Count Demo</a></span> |
                 </div>
             </div>
         </div>
     </div>
-    <a href="http://localhost:51359/Home" id="back-to-top"><i class="fa fa-angle-up"></i></a>
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
+    <a href="http://localhost:51359/Demo" id="back-to-top"><i class="fa fa-angle-up"></i></a>
+    
     @Scripts.Render("~/Scripts/bootstrapValidator.js")
     @Scripts.Render("~/Scripts/jquery.session.js")
     @Scripts.Render("~/Scripts/layout/layout.js")
     @RenderSection("scripts", required: false)
-    @RenderSection("home", required: false)
+    <script type="text/javascript">
+        $(document).ready(function () {
+            if ("@ViewBag.IsAuthentication" == "False"){
+              $("<div id='shade' title='Please Login in!'></div>").css({
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            backgroundColor: "#808080",
+            height: '100%',
+            width:'100%',
+            opacity: 0.7,
+            zIndex: 300}).appendTo(".content-page");
+            }else{
+            $.ajax({
+                type: "POST",
+                url: 'GetUser',
+                data: { email: "@ViewBag.Email", password: "@ViewBag.Password" },
+                dataType: "json",
+                success: function (data) {
+                    if (data.result) {
+                        $('#Auth-login').hide();
+                        themeApp.bingUserDetail(data);
+                        $('#shade').hide();
+                        $('#userinfo').show();
+                    }
+                    else {
+                        $("#login-waring").text("Login Failed, please check your eamil and password")
+                        $('#userinfo').hide();
+                        $("#login-waring").show();
+                    }
+                }
+            })
+        }
+        })
+
+    </script>
 </body>
 </html>

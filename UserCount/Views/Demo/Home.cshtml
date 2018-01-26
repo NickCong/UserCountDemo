@@ -1,0 +1,19 @@
+﻿
+@Styles.Render("~/Content/CSS/index.css")
+<div>
+    @{ for (int i = 1; i < 7; i++)
+            {
+                string a = string.Format("http://localhost:51359/Content/Images/player0{0}.jpg", i);
+            <div class="col-md-4 col-sm-6 col-xs-6 player">
+                <div class="post-thumb">
+                    <img src="@a" alt="">
+                    <div class="title-over">
+                        <button onclick="Vote(@i)">Vote</button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+@Scripts.Render("~/Scripts/home/index.js")
+

@@ -26,7 +26,7 @@
         {
             $.ajax({
                 type: "POST",
-                url: 'home/GetUser',
+                url: 'GetUser',
                 data: { email: $('#email').val(), password: $('#password').val() },
                 dataType: "json",
                 success: function (data) {
@@ -51,7 +51,7 @@
         $("#detailphone").text(data.phonenumber);
     },
     init: function () {
-        //themeApp.getUserInfo();
+        themeApp.getUserInfo();
         themeApp.backToTop();
         $('#email').click(function () {
             $("#login-waring").hide();
@@ -65,7 +65,7 @@
             if (bootstrapValidator.isValid()) {
                 $.ajax({
                     type: "POST",
-                    url: 'home/Login',
+                    url: 'Login',
                     data: { email: $('#email').val(), password: $('#password').val(), source: window.location.href },
                     dataType: "json",
                     success: function (data) {
@@ -90,8 +90,8 @@
             if (bootstrapValidator.isValid()) {
                 $.ajax({
                     type: "POST",
-                    url: 'home/Register',
-                    data: { email: $('#email').val(), password: $('#password').val(), source: window.location.href },
+                    url: 'Register',
+                    data: { email: $('#email').val(), password: $('#password').val()},
                     dataType: "json",
                     success: function (data) {
                         if (data.result) {

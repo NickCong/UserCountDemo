@@ -11,7 +11,7 @@ namespace UserCountAPI.Controllers
 {
     public class AWSDynamoDBHelper
     {
-        string TABLEName = "Demo";
+        string TABLEName = ConfigurationManager.AppSettings["TABLEName"];
         string Acceskey = ConfigurationManager.AppSettings["AWSAccessKey"];
         string Secretkey = ConfigurationManager.AppSettings["AWSSecretKey"];
         AmazonDynamoDBClient client;
@@ -51,8 +51,8 @@ namespace UserCountAPI.Controllers
                     foreach (var doc in docList)
                     {
                         string email = doc["Email"] != null ? doc["Email"].AsString() : string.Empty;
-                        List<string> reference = doc["Reference"] != null ? doc["Reference"].AsListOfString() : new List<string>();
-                        List<string> duplicateReference = doc["DuplicateReference"] != null ? doc["DuplicateReference"].AsListOfString() : new List<string>();
+                        List<string> reference = doc.ContainsKey("Reference") ? doc["Reference"].AsListOfString() : new List<string>();
+                        List<string> duplicateReference = doc.ContainsKey("DuplicateReference") ? doc["DuplicateReference"].AsListOfString() : new List<string>();
                         if (!string.IsNullOrEmpty(email) && !reference.Contains(referenceID))
                         {
                             reference.Add(referenceID);                           
@@ -64,7 +64,7 @@ namespace UserCountAPI.Controllers
                             Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = email } } },
                             ExpressionAttributeNames = new Dictionary<string, string> { { "#reference", "Reference" }, { "#duplicateReference", "DuplicateReference" } },
                             ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } }, { ":newDuplicateReference", new AttributeValue { SS = duplicateReference } } },
-                            UpdateExpression = "SET #reference = :newReference,#duplicateReference = :newDuplicateReference;"
+                            UpdateExpression = "SET #reference = :newReference,#duplicateReference = :newDuplicateReference"
                         };
                         client.UpdateItem(sourceRequest);
                     }
@@ -79,9 +79,9 @@ namespace UserCountAPI.Controllers
         {
             try
             {
-                var domain = usertable.GetItem("Domain");
-                List<string> reference = domain["Reference"] != null ? domain["Reference"].AsListOfString() : new List<string>();
-                List<string> duplicateReference = domain["DuplicateReference"] != null ? domain["DuplicateReference"].AsListOfString() : new List<string>();
+                var domain = usertable.GetItem(ConfigurationManager.AppSettings["DomainSourceID"]);
+                List<string> reference = domain.ContainsKey("Reference") ? domain["Reference"].AsListOfString() : new List<string>();
+                List<string> duplicateReference = domain.ContainsKey("DuplicateReference") ? domain["DuplicateReference"].AsListOfString() : new List<string>();
                 if (!string.IsNullOrEmpty(referenceID) && !reference.Contains(referenceID))
                 {
                     reference.Add(referenceID);                   
@@ -90,10 +90,10 @@ namespace UserCountAPI.Controllers
                 var updateRequest = new UpdateItemRequest
                 {
                     TableName = TABLEName,
-                    Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = "Domain" } } },
+                    Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = ConfigurationManager.AppSettings["DomainSourceID"] } } },
                     ExpressionAttributeNames = new Dictionary<string, string> { { "#reference", "Reference" }, { "#duplicateReference", "DuplicateReference" } },
                     ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } },{ ":newDuplicateReference", new AttributeValue { SS = duplicateReference } } },
-                    UpdateExpression = "SET #reference = :newReference,#duplicateReference = :newDuplicateReference;"
+                    UpdateExpression = "SET #reference = :newReference,#duplicateReference = :newDuplicateReference"
                 };
                 client.UpdateItem(updateRequest);
             }

@@ -11,7 +11,7 @@ namespace UserCount.Controllers
 {
     public class AWSDynamoDBHelper
     {
-        string TABLEName = "Demo";
+        string TABLEName = ConfigurationManager.AppSettings["TABLEName"];
         string Acceskey = ConfigurationManager.AppSettings["AWSAccessKey"];
         string Secretkey = ConfigurationManager.AppSettings["AWSSecretKey"];
         AmazonDynamoDBClient client;
@@ -125,7 +125,7 @@ namespace UserCount.Controllers
                     foreach (var doc in docList)
                     {
                         string email = doc["Email"] != null ? doc["Email"].AsString() : string.Empty;
-                        List<string> sourceReference = doc["SourceReference"] != null ? doc["SourceReference"].AsListOfString() : new List<string>();
+                        List<string> sourceReference = doc.ContainsKey("SourceReference") ? doc["SourceReference"].AsListOfString() : new List<string>();
                         if (!string.IsNullOrEmpty(email) && !sourceReference.Contains(referenceID))
                         {
                             sourceReference.Add(referenceID);
@@ -152,7 +152,7 @@ namespace UserCount.Controllers
             try
             {
                 var domain = usertable.GetItem("Domain");
-                List<string> sourceReference = domain["SourceReference"] != null ? domain["SourceReference"].AsListOfString() : new List<string>();
+                List<string> sourceReference = domain.ContainsKey("SourceReference") ? domain["SourceReference"].AsListOfString() : new List<string>();
                 if (!sourceReference.Contains(referenceID))
                 {
                     sourceReference.Add(referenceID);
@@ -202,7 +202,7 @@ namespace UserCount.Controllers
                     {
                         detail.result = true;
                         detail.email = email;
-                        detail.personalurl = user.ContainsKey("PersonalID") ? ConfigurationManager.AppSettings["DomainURL"] + "/" + user["PersonalID"].AsString() : string.Empty;
+                        detail.personalurl = user.ContainsKey("PersonalID") ? ConfigurationManager.AppSettings["DomainURL"] + "/" + user["PersonalID"].AsString()+"/home" : string.Empty;
                         detail.phonenumber = user.ContainsKey("PhoneNumber") ? user["PhoneNumber"].AsString() : string.Empty;
                         detail.picture = user.ContainsKey("Picture") ? user["Picture"].AsString() : string.Empty;
                     }                    
