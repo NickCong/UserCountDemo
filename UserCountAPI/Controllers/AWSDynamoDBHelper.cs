@@ -55,9 +55,9 @@ namespace UserCountAPI.Controllers
                         List<string> duplicateReference = doc.ContainsKey("DuplicateReference") ? doc["DuplicateReference"].AsListOfString() : new List<string>();
                         if (!string.IsNullOrEmpty(email) && !reference.Contains(referenceID))
                         {
-                            reference.Add(referenceID);                           
-                        }
-                        duplicateReference.Add(referenceID);
+                            reference.Add(referenceID);
+                            duplicateReference.Add(referenceID);
+                        }                        
                         var sourceRequest = new UpdateItemRequest
                         {
                             TableName = TABLEName,
@@ -69,6 +69,38 @@ namespace UserCountAPI.Controllers
                         client.UpdateItem(sourceRequest);
                     }
                 } while (!search.IsDone);
+                UpdateUpdateDomainOtherReference(referenceID);
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+        private void UpdateUpdateDomainOtherReference(string referenceID)
+        {
+            try
+            {
+                var domain = usertable.GetItem(ConfigurationManager.AppSettings["DomainSourceID"]);
+                List<string> otherReference = domain.ContainsKey("OtherReference") ? domain["OtherReference"].AsListOfString() : new List<string>();
+                List<string> otherDuplicateReference = domain.ContainsKey("OtherDuplicateReference") ? domain["OtherDuplicateReference"].AsListOfString() : new List<string>();                
+                if (!string.IsNullOrEmpty(referenceID) && !otherReference.Contains(referenceID))
+                {
+                    otherReference.Add(referenceID);
+                }               
+                otherDuplicateReference.Add(referenceID);
+                var updateRequest = new UpdateItemRequest
+                {
+                    TableName = TABLEName,
+                    Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = ConfigurationManager.AppSettings["DomainSourceID"] } } },
+                    ExpressionAttributeNames = new Dictionary<string, string> {
+                        
+                        { "#otherReference", "OtherReference" },
+                        { "#otherDuplicateReference", "OtherDuplicateReference" }
+                    },
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newOtherReference", new AttributeValue { SS = otherReference } }, { ":newDuplicateReference", new AttributeValue { SS = otherDuplicateReference } } },
+                    UpdateExpression = "SET #otherReference = :newOtherReference,#otherDuplicateReference = :newOtherDuplicateReference"
+                };
+                client.UpdateItem(updateRequest);
             }
             catch (Exception e)
             {
@@ -81,18 +113,21 @@ namespace UserCountAPI.Controllers
             {
                 var domain = usertable.GetItem(ConfigurationManager.AppSettings["DomainSourceID"]);
                 List<string> reference = domain.ContainsKey("Reference") ? domain["Reference"].AsListOfString() : new List<string>();
-                List<string> duplicateReference = domain.ContainsKey("DuplicateReference") ? domain["DuplicateReference"].AsListOfString() : new List<string>();
+                List<string> duplicateReference = domain.ContainsKey("DuplicateReference") ? domain["DuplicateReference"].AsListOfString() : new List<string>();               
                 if (!string.IsNullOrEmpty(referenceID) && !reference.Contains(referenceID))
                 {
-                    reference.Add(referenceID);                   
-                }
+                    reference.Add(referenceID);
+                }             
                 duplicateReference.Add(referenceID);
                 var updateRequest = new UpdateItemRequest
                 {
                     TableName = TABLEName,
                     Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = ConfigurationManager.AppSettings["DomainSourceID"] } } },
-                    ExpressionAttributeNames = new Dictionary<string, string> { { "#reference", "Reference" }, { "#duplicateReference", "DuplicateReference" } },
-                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } },{ ":newDuplicateReference", new AttributeValue { SS = duplicateReference } } },
+                    ExpressionAttributeNames = new Dictionary<string, string> {
+                        { "#reference", "Reference" },
+                        { "#duplicateReference", "DuplicateReference" }
+                    },
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } }, { ":newDuplicateReference", new AttributeValue { SS = duplicateReference } } },
                     UpdateExpression = "SET #reference = :newReference,#duplicateReference = :newDuplicateReference"
                 };
                 client.UpdateItem(updateRequest);

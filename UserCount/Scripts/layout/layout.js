@@ -48,10 +48,12 @@
     bingUserDetail: function (data) {
         $("#detailemail").val(data.email);
         $("#detailpersonalurl").text(data.personalurl);
+        $("#detailpersonalurl").attr('href', data.personalurl);
+        $("#detailpersonalurl").attr('title', data.personalurl);
         $("#detailphone").text(data.phonenumber);
     },
     init: function () {
-        themeApp.getUserInfo();
+        //themeApp.getUserInfo();
         themeApp.backToTop();
         $('#email').click(function () {
             $("#login-waring").hide();

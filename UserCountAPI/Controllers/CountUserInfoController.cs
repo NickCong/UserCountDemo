@@ -12,9 +12,40 @@ namespace UserCountAPI.Controllers
     public class CountUserInfoController : ApiController
     {
         // GET api/values
-        public IEnumerable<string> Get()
+        //public IEnumerable<string> Get()
+        //{
+        //    return new string[] { "value1", "value2" };
+        //}
+        public Dictionary<string, string> Get()
         {
-            return new string[] { "value1", "value2" };
+            AWSDynamoDBHelper dbHelper = new AWSDynamoDBHelper();
+            Document user = dbHelper.GetUser(ConfigurationManager.AppSettings["DomainSourceID"]);
+            Dictionary<string, string> report = new Dictionary<string, string>();
+            if (user != null)
+            {
+                if (user.ContainsKey("Reference"))
+                {
+                    report.Add("NoRerence", user["Reference"].AsListOfString().Count.ToString());                  
+                }
+                else
+                {
+                    report.Add("NoRerence", "0");
+                }
+                if (user.ContainsKey("OtherReference"))
+                {
+                    report.Add("Reference", user["OtherReference"].AsListOfString().Count.ToString());
+                }
+                else
+                {
+                    report.Add("Reference", "0");
+                }
+            }
+            else
+            {
+                report.Add("Reference", "0");
+                report.Add("NoRerence", "0");
+            }
+            return report;
         }
 
         // GET api/values/5
@@ -28,7 +59,7 @@ namespace UserCountAPI.Controllers
             {
                 if (!user["PersonalID"].AsString().Equals(sourceID))
                 {
-                    if (string.IsNullOrEmpty(sourceID) || sourceID.Equals(ConfigurationManager.AppSettings["DomainSourceID"],StringComparison.OrdinalIgnoreCase))
+                    if (string.IsNullOrEmpty(sourceID) || sourceID.Equals(ConfigurationManager.AppSettings["DomainSourceID"], StringComparison.OrdinalIgnoreCase))
                     {
                         dbHelper.UpdateUpdateDomainReference(user["PersonalID"].AsString());
                     }
@@ -71,6 +102,6 @@ namespace UserCountAPI.Controllers
         public void Delete(int id)
         {
         }
-        
+
     }
 }

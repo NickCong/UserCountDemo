@@ -1,3 +1,7 @@
-﻿<div>
-    <label></label>
+﻿
+@Styles.Render("~/Content/CSS/report.css")
+<div id="reportpage">
+    <canvas id="reportpiechart"></canvas>
 </div>
+@Scripts.Render("https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js")
+@Scripts.Render("~/Scripts/report/report.js")

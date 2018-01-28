@@ -114,21 +114,21 @@
                     <div class="widget" id="userinfo" hidden>
                         <h4 class="title">User Detail</h4>
                         <div class="content tag-cloud">
-                            <div>
+                            <div class="userdetail-info">
                                 <img class="detailpicture" src="~/Content/Images/unauthentic.jpg" click="changephoto()" />
                             </div>
-                            <div>
-                                <label for="detailemail">Email:</label><input type="email" id="detailemail" name="detailemail"></input>
+                            <div class="userdetail-info">
+                                <label for="detailemail">Email:</label><input type="email" id="detailemail" name="detailemail" disabled></input>
                             </div>
-                            <div>
-                                <label for="detailpersonalurl">Personal Url:</label><span id="detailpersonalurl" name="detailpersonalurl"></span>
+                            <div class="userdetail-info">
+                                <label for="detailpersonalurl">Personal Url:</label><a id="detailpersonalurl" target="_blank" name="detailpersonalurl"></a>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group userdetail-info">
                                 <label for="detailnewpassword">New Password:</label><input type="password" id="detailnewpassword" name="detailnewpassword"></input>
                                 <label for="detailconfirmpassword">Confirm Password:</label><input id="detailconfirmpassword" name="detailconfirmpassword"></input>
                                 <button>Reset Password</button>
                             </div>
-                            <div>
+                            <div class="userdetail-info">
                                 <label for="detailphone">Phone Number:</label><input type="tel" id="detailphone" name="detailphone"></input>
                             </div>
                         </div>
@@ -197,11 +197,20 @@
             width:'100%',
             opacity: 0.7,
             zIndex: 300}).appendTo(".content-page");
-            }else{
-            $.ajax({
+            } else {
+                let data = {};
+                data.email = "@ViewBag.email";
+                data.password = "@ViewBag.password";
+                data.personalurl = "@ViewBag.personalurl";
+                data.phonenumber = "@ViewBag.phonenumber";
+                $('#Auth-login').hide();
+                themeApp.bingUserDetail(data);
+                $('#shade').hide();
+                $('#userinfo').show();
+            @*$.ajax({
                 type: "POST",
                 url: 'GetUser',
-                data: { email: "@ViewBag.Email", password: "@ViewBag.Password" },
+                data: { email: "@ViewBag.email", password: "@ViewBag.password" },
                 dataType: "json",
                 success: function (data) {
                     if (data.result) {
@@ -216,7 +225,7 @@
                         $("#login-waring").show();
                     }
                 }
-            })
+            })*@
         }
         })
 

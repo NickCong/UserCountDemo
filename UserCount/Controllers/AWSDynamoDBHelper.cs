@@ -84,7 +84,7 @@ namespace UserCount.Controllers
                     UpdateExpression = "SET #password = :newPassword, #sourceID = :newSourceID, #personalID = :newPersonalID"
                 };
                 client.UpdateItem(request);
-                if (sourceID.Equals(ConfigurationManager.AppSettings["DomainSourceID"]))
+                if (sourceID.Equals(ConfigurationManager.AppSettings["DomainSourceID"],StringComparison.OrdinalIgnoreCase))
                 {
                     UpdateDomainSourceUserReference(personalID);
                 }
@@ -151,7 +151,7 @@ namespace UserCount.Controllers
         {
             try
             {
-                var domain = usertable.GetItem("Domain");
+                var domain = usertable.GetItem(ConfigurationManager.AppSettings["DomainSourceID"]);
                 List<string> sourceReference = domain.ContainsKey("SourceReference") ? domain["SourceReference"].AsListOfString() : new List<string>();
                 if (!sourceReference.Contains(referenceID))
                 {
@@ -159,7 +159,7 @@ namespace UserCount.Controllers
                     var updateRequest = new UpdateItemRequest
                     {
                         TableName = TABLEName,
-                        Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = "Domain" } } },
+                        Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = ConfigurationManager.AppSettings["DomainSourceID"] } } },
                         ExpressionAttributeNames = new Dictionary<string, string> { { "#sourceReference", "SourceReference" } },
                         ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { SS = sourceReference } } },
                         UpdateExpression = "SET #sourceReference = :newSourceReference"

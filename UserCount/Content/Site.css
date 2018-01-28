@@ -135,6 +135,16 @@
     padding: 21px 30px;
 }
 
+.userdetail-info {
+   margin:15px 30px;
+}
+#detailpersonalurl {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width:100%;
+    cursor:pointer;
+}
 .widget {
     margin-bottom: 35px;
 }

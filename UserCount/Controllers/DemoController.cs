@@ -10,25 +10,36 @@ using System.Web.Mvc;
 
 namespace UserCount.Controllers
 {
+
     public class DemoController : Controller
     {
         public ActionResult Home()
         {
+            GetInitInfo();
+            return View();
+        }
+
+        private void GetInitInfo()
+        {
             AWSDynamoDBHelper helper = new AWSDynamoDBHelper();
-            string email = Session["email"] == null?string.Empty: Session["email"].ToString();
+            string email = Session["email"] == null ? string.Empty : Session["email"].ToString();
             string enpassword = Session["password"] == null ? string.Empty : Session["password"].ToString();
             if (string.IsNullOrEmpty(email))
             {
                 ViewBag.IsAuthentication = false;
-            } 
+            }
             else
             {
                 UserDetail result = helper.CheckUser(email, enpassword);
                 ViewBag.IsAuthentication = result.result;
-                ViewBag.Email = email;
-                ViewBag.Password = enpassword;
+                if (ViewBag.IsAuthentication)
+                {
+                    ViewBag.email = result.email;
+                    ViewBag.password = result.password;
+                    ViewBag.personalurl = result.personalurl;
+                    ViewBag.phonenumber = result.phonenumber;
+                }
             }
-            return View();
         }
 
         [HttpPost]
@@ -146,6 +157,7 @@ namespace UserCount.Controllers
 
         public ActionResult About()
         {
+            GetInitInfo();
             ViewBag.Message = "Your application description page.";
 
             return View();
@@ -153,6 +165,7 @@ namespace UserCount.Controllers
 
         public ActionResult Report()
         {
+            GetInitInfo();
             AWSDynamoDBHelper helper = new AWSDynamoDBHelper();
             string email = Session["email"] == null ? string.Empty : Session["email"].ToString();
             string enpassword = Session["password"] == null ? string.Empty : Session["password"].ToString();
