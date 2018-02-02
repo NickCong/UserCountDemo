@@ -68,7 +68,7 @@
                 $.ajax({
                     type: "POST",
                     url: 'Login',
-                    data: { email: $('#email').val(), password: $('#password').val(), source: window.location.href },
+                    data: { email: $('#email').val(), password: $('#password').val() },
                     dataType: "json",
                     success: function (data) {
                         if (data.result) {
@@ -76,6 +76,10 @@
                             themeApp.bingUserDetail(data);
                             $('#shade').hide();
                             $('#userinfo').show();
+                            if (window.location.href.endsWith('Report'))
+                            {
+                                window.location.reload();
+                            }
                         }
                         else {
                             $("#login-waring").text("Login Failed, please check your eamil and password")

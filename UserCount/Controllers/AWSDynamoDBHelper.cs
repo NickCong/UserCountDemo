@@ -14,13 +14,14 @@ namespace UserCount.Controllers
         string TABLEName = ConfigurationManager.AppSettings["TABLEName"];
         string Acceskey = ConfigurationManager.AppSettings["AWSAccessKey"];
         string Secretkey = ConfigurationManager.AppSettings["AWSSecretKey"];
+        string AuthenticationRegion = ConfigurationManager.AppSettings["AuthenticationRegion"];
         AmazonDynamoDBClient client;
         Table usertable;
         public AWSDynamoDBHelper()
         {
             AmazonDynamoDBConfig ddbConfig = new AmazonDynamoDBConfig();
             ddbConfig.ServiceURL = "https://dynamodb.us-east-2.amazonaws.com";
-            ddbConfig.AuthenticationRegion = "us-east-2";
+            ddbConfig.AuthenticationRegion = AuthenticationRegion;
             client = new AmazonDynamoDBClient(Acceskey, Secretkey, ddbConfig);
             usertable = Table.LoadTable(client, TABLEName);
         }
@@ -92,6 +93,7 @@ namespace UserCount.Controllers
                 {
                     UpdateSourceUserReference(sourceID, personalID);
                 }
+                UpdateAllRegister(personalID);
             }
             catch (Exception e)
             {
@@ -106,7 +108,7 @@ namespace UserCount.Controllers
                 filter.AddCondition("PersonalID", ScanOperator.Equal, new DynamoDBEntry[] { sourceID });
                 ScanOperationConfig config = new ScanOperationConfig
                 {
-                    AttributesToGet = new List<string> { "Email", "SourceReference" },
+                    AttributesToGet = new List<string> { "Email", "SourceRegister" },
                     Filter = filter
                 };
                 Search search = usertable.Scan(filter);
@@ -125,16 +127,16 @@ namespace UserCount.Controllers
                     foreach (var doc in docList)
                     {
                         string email = doc["Email"] != null ? doc["Email"].AsString() : string.Empty;
-                        List<string> sourceReference = doc.ContainsKey("SourceReference") ? doc["SourceReference"].AsListOfString() : new List<string>();
-                        if (!string.IsNullOrEmpty(email) && !sourceReference.Contains(referenceID))
+                        List<string> sourceRegister = doc.ContainsKey("SourceRegister") ? doc["SourceRegister"].AsListOfString() : new List<string>();
+                        if (!string.IsNullOrEmpty(email) && !sourceRegister.Contains(referenceID))
                         {
-                            sourceReference.Add(referenceID);
+                            sourceRegister.Add(referenceID);
                             var sourceRequest = new UpdateItemRequest
                             {
                                 TableName = TABLEName,
                                 Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = email } } },
-                                ExpressionAttributeNames = new Dictionary<string, string> { { "#sourceReference", "SourceReference" } },
-                                ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { SS = sourceReference } } },
+                                ExpressionAttributeNames = new Dictionary<string, string> { { "#sourceReference", "SourceRegister" } },
+                                ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { SS = sourceRegister } } },
                                 UpdateExpression = "SET #sourceReference = :newSourceReference"
                             };
                             client.UpdateItem(sourceRequest);
@@ -152,16 +154,41 @@ namespace UserCount.Controllers
             try
             {
                 var domain = usertable.GetItem(ConfigurationManager.AppSettings["DomainSourceID"]);
-                List<string> sourceReference = domain.ContainsKey("SourceReference") ? domain["SourceReference"].AsListOfString() : new List<string>();
-                if (!sourceReference.Contains(referenceID))
+                List<string> sourceRegister = domain.ContainsKey("SourceRegister") ? domain["SourceRegister"].AsListOfString() : new List<string>();
+                if (!sourceRegister.Contains(referenceID))
                 {
-                    sourceReference.Add(referenceID);
+                    sourceRegister.Add(referenceID);
                     var updateRequest = new UpdateItemRequest
                     {
                         TableName = TABLEName,
                         Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = ConfigurationManager.AppSettings["DomainSourceID"] } } },
-                        ExpressionAttributeNames = new Dictionary<string, string> { { "#sourceReference", "SourceReference" } },
-                        ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { SS = sourceReference } } },
+                        ExpressionAttributeNames = new Dictionary<string, string> { { "#sourceReference", "SourceRegister" } },
+                        ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { SS = sourceRegister } } },
+                        UpdateExpression = "SET #sourceReference = :newSourceReference"
+                    };
+                    client.UpdateItem(updateRequest);
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+        public void UpdateAllRegister(string referenceID)
+        {
+            try
+            {
+                var domain = usertable.GetItem(ConfigurationManager.AppSettings["DomainSourceID"]);
+                List<string> allRegister = domain.ContainsKey("AllRegister") ? domain["AllRegister"].AsListOfString() : new List<string>();
+                if (!allRegister.Contains(referenceID))
+                {
+                    allRegister.Add(referenceID);
+                    var updateRequest = new UpdateItemRequest
+                    {
+                        TableName = TABLEName,
+                        Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = ConfigurationManager.AppSettings["DomainSourceID"] } } },
+                        ExpressionAttributeNames = new Dictionary<string, string> { { "#sourceReference", "AllRegister" } },
+                        ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newSourceReference", new AttributeValue { SS = allRegister } } },
                         UpdateExpression = "SET #sourceReference = :newSourceReference"
                     };
                     client.UpdateItem(updateRequest);
@@ -234,6 +261,46 @@ namespace UserCount.Controllers
             {
                 return false;
             }
+        }
+        public List<string> GetAllUserEmail()
+        {
+            List<string> emails = new List<string>();
+            try
+            {
+                ScanFilter filter = new ScanFilter();
+                filter.AddCondition("Email", ScanOperator.NotEqual, ConfigurationManager.AppSettings["DomainSourceID"]);
+                ScanOperationConfig config = new ScanOperationConfig
+                {
+                    AttributesToGet = new List<string> { "Email" },
+                    Filter = filter
+                };
+                Search search = usertable.Scan(filter);
+                List<Document> docList = new List<Document>();
+                do
+                {
+                    try
+                    {
+                        docList = search.GetNextSet();
+                        foreach (Document doc in docList)
+                        {
+                            if (doc.ContainsKey("Email") && !string.IsNullOrEmpty(doc["Email"].AsString()))
+                            {
+                                emails.Add(doc["Email"].AsString());
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("\n Error: Search.GetNextStep failed because: " + ex.Message);
+                        break;
+                    }
+                } while (!search.IsDone);
+            }
+            catch (Exception e)
+            {
+
+            }
+            return emails;
         }
     }
 }

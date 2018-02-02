@@ -1,4 +1,11 @@
-﻿#reportpiechart{
-    width:100%;
-    height:400px;
+﻿#reportbarchart,#reportpiechart {
+    width: 100%;
+    height: 400px;
+}
+#current-reference, #reportpiechart {
+    margin: 15px 0;
+}
+#userlist{
+    max-height:200px;
+    overflow:scroll;
 }

@@ -1,7 +1,77 @@
 ﻿
 @Styles.Render("~/Content/CSS/report.css")
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
 <div id="reportpage">
-    <canvas id="reportpiechart"></canvas>
+    <input type="text" id="hidden-email" hidden />
+    <input type="text" id="hidden-permission" hidden />
+    <div id="all-reference">
+        <div>
+            <label for="alluser">All User</label>
+            <input type="text" disabled name="alluser" id="alluser" />
+        </div>
+        <div>
+            <label for="nooperateuser">No Operate User </label>
+            <input type="text" disabled name="nooperateuser" id="nooperateuser" />
+        </div>
+        <div>
+            <label for="operatesuccess">Operate Success</label>
+            <input type="text" disabled name="operatesuccess" id="operatesuccess" />
+        </div>
+        <div>
+            <label for="operatefail">Operate Fail</label>
+            <input type="text" disabled name="operatefail" id="operatefail" />
+        </div>
+    </div>
+    @*<canvas id="reportpiechart"></canvas>*@
+    @{
+        if (ViewBag.role == "admin")
+        {
+            <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                    Choose User
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" id="userlist" aria-labelledby="dropdownMenu1">
+                    <li><a href="javascript:void(0)" onclick="reportApp.GetAllUserReference()">All</a></li>
+                </ul>
+            </div>
+            <div id="admin-reference">
+                <label for="admin-reftable" id="admin-reftable-label">Reference from the user</label>
+                <table id="admin-reftable">
+                    @*<thead>
+                            <tr>
+                                <th data-field="Email">Email</th>
+                                <th data-field="PersonalID">Personal ID</th>
+                                <th data-field="BTime">Time</th>
+                                <th data-field="BStatus">Status</th>
+                            </tr>
+                        </thead>*@
+                </table>
+
+                <label for="admin-soutable" id="admin-soutable-label">The user's references</label>
+                <table id="admin-soutable"></table>
+            </div>
+        }
+        else
+        {
+            <div id="current-reference">
+                <label for="reftable">Reference from currrent user</label>
+                <table id="reftable"></table>
+
+                <label for="soutable">Current user's reference</label>
+                <table id="soutable"></table>
+            </div>
+        }
+    }
+    
+    
+
 </div>
 @Scripts.Render("https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js")
+<script type="text/javascript">
+    $('#hidden-email').val('@ViewBag.email')
+     $('#hidden-permission').val('@ViewBag.role')
+</script>
 @Scripts.Render("~/Scripts/report/report.js")

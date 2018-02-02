@@ -96,6 +96,15 @@ namespace UserCount.Controllers
             return Json(detail, JsonRequestBehavior.AllowGet);
         }
 
+
+        [HttpGet]
+        public JsonResult GetAllUserEmail()
+        {
+            AWSDynamoDBHelper dbHelper = new AWSDynamoDBHelper();
+            List<string> emails = dbHelper.GetAllUserEmail();
+            return Json(emails, JsonRequestBehavior.AllowGet);
+        }
+
         /// <summary>  
         /// C# DES解密方法  
         /// </summary>  
@@ -166,19 +175,12 @@ namespace UserCount.Controllers
         public ActionResult Report()
         {
             GetInitInfo();
-            AWSDynamoDBHelper helper = new AWSDynamoDBHelper();
-            string email = Session["email"] == null ? string.Empty : Session["email"].ToString();
-            string enpassword = Session["password"] == null ? string.Empty : Session["password"].ToString();
-            if (string.IsNullOrEmpty(email))
+            if (ViewBag.IsAuthentication)
             {
-                ViewBag.IsAuthentication = false;
-            }
-            else
-            {
-                UserDetail result = helper.CheckUser(email, enpassword);
-                ViewBag.IsAuthentication = result.result;
-                ViewBag.Email = email;
-                ViewBag.Password = enpassword;
+                if (ViewBag.email == ConfigurationManager.AppSettings["AdminUser"])
+                {
+                    ViewBag.role = "admin";
+                }
             }
             return View();
         }
