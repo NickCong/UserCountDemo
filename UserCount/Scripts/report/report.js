@@ -82,7 +82,7 @@
             url: APIurl + 'GetAllUserReference',
             dataType: "json",
             success: function (data) {
-                $("#admin-reftable").bootstrapTable('destroy'); 
+                $("#admin-reftable").bootstrapTable('destroy');
                 $("#admin-soutable").bootstrapTable('destroy');
                 var sourcetable = [];
                 sourcetable = sourcetable.concat(data.UserSourceReferenceSuccess);
@@ -105,7 +105,7 @@
                         }, {
                             field: 'TTime',
                             title: 'Transform Time'
-                        },{
+                        }, {
                             field: 'TStatus',
                             title: 'Transform Status'
                         }, {
@@ -123,8 +123,7 @@
     },
 
     FormatterTransform: function (value, row) {
-        if (row["TTime"] == null || row["TTime"] == undefined || row["TTime"] == '')
-        {
+        if (row["TTime"] == null || row["TTime"] == undefined || row["TTime"] == '') {
             return "<span class='glyphicon glyphicon-ban-circle'></span>"
         } else {
             return "<button click=\"reportApp.TransformReferenceStatus(this)\" title='Transform Stauts'><span class='glyphicon glyphicon-transfer'></span></button>";
@@ -270,7 +269,7 @@
         $('#admin-reference label')[0].innerText = "Reference from " + a.text;
         $('#admin-reference label')[1].innerText = a.text + "'s reference";
         reportApp.GetChooseUserReference(a.text)
-       
+
     },
 
     GeneratePieChart: function (book, nobook, rfrate, rsrate) {
@@ -332,9 +331,12 @@
     },
 
     init: function () {
-        reportApp.GetCurrentInfo();
         if ($('#hidden-permission').val() == 'admin') {
             reportApp.GetAllInfo();
+            reportApp.GetCurrentInfo();
+        }
+        else {
+            reportApp.GetChooseUserReference($('#hidden-email').val());
         }
     }
 }

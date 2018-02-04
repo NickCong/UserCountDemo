@@ -85,21 +85,22 @@ namespace UserCount.Controllers
                     UpdateExpression = "SET #password = :newPassword, #sourceID = :newSourceID, #personalID = :newPersonalID"
                 };
                 client.UpdateItem(request);
-                if (sourceID.Equals(ConfigurationManager.AppSettings["DomainSourceID"],StringComparison.OrdinalIgnoreCase))
-                {
-                    UpdateDomainSourceUserReference(personalID);
-                }
-                else
-                {
-                    UpdateSourceUserReference(sourceID, personalID);
-                }
-                UpdateAllRegister(personalID);
+                //if (sourceID.Equals(ConfigurationManager.AppSettings["DomainSourceID"],StringComparison.OrdinalIgnoreCase))
+                //{
+                //    UpdateDomainSourceUserReference(personalID);
+                //}
+                //else
+                //{
+                //    UpdateSourceUserReference(sourceID, personalID);
+                //}
+                //UpdateAllRegister(personalID);
             }
             catch (Exception e)
             {
                 //
             }
         }
+        /*
         public void UpdateSourceUserReference(string sourceID, string referenceID)
         {
             try
@@ -199,6 +200,7 @@ namespace UserCount.Controllers
 
             }
         }
+        */
         public bool CheckUser(string email)
         {
             bool IsExist = false;

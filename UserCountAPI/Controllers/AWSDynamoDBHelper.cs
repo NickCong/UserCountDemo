@@ -178,7 +178,7 @@ namespace UserCountAPI.Controllers
         {
             ALLReferenceInfo referenceInfo = new ALLReferenceInfo();
             try
-            {               
+            {       //query        
                 Document user = GetUser(ConfigurationManager.AppSettings["DomainSourceID"]);
                 referenceInfo.AllUser = user["AllRegister"].AsListOfString().Count;
                 referenceInfo.AllDomainRefSuccess = user.ContainsKey("DomainRefSuccessCount") ? user["DomainRefSuccessCount"].AsInt() : 0;
