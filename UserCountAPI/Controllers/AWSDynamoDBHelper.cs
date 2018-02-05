@@ -215,6 +215,7 @@ namespace UserCountAPI.Controllers
                 {
                     if (filterAdmin && !doc.Email.Equals(ConfigurationManager.AppSettings["DomainSourceID"], StringComparison.OrdinalIgnoreCase))
                     {
+                        doc.PersonalUrl = string.Format(ConfigurationManager.AppSettings["DomainURL"], doc.PersonalID);
                         if (doc.BStatus.Equals("Y", StringComparison.OrdinalIgnoreCase))
                         {
                             referenceInfo.UserSourceReferenceSuccess.Add(doc);
@@ -233,6 +234,7 @@ namespace UserCountAPI.Controllers
                 }
                 foreach (ShowBookInfo doc in books)
                 {
+                    doc.PersonalUrl = string.Format(ConfigurationManager.AppSettings["DomainURL"], doc.PersonalID);
                     if (doc.BStatus.Equals("Y", StringComparison.OrdinalIgnoreCase))
                     {
                         referenceInfo.UserReferenceSuccess.Add(doc);

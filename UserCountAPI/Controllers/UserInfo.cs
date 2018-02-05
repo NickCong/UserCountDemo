@@ -52,7 +52,7 @@ namespace UserCountAPI.Controllers
         public string BTime { get; set; }
         public string Email { get; set; }
         public string PersonalID { get; set; }
-
+        public string PersonalUrl { get; set; }
         public string ReferenceEmail { get; set; }
         public string ReferencePersonalID { get; set; }
     }

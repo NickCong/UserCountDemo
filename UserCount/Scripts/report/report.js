@@ -36,6 +36,10 @@
                 $('#reftable').bootstrapTable({
                     "columns": [
                         {
+                            field: 'PersonalUrl',
+                            title: 'Personal Url'
+                        },
+                        {
                             field: 'Email',
                             title: 'Email'
                         }, {
@@ -52,6 +56,10 @@
                 });
                 $('#soutable').bootstrapTable({
                     "columns": [
+                        {
+                            field: 'PersonalUrl',
+                            title: 'Personal Url'
+                        },
                         {
                             field: 'Email',
                             title: 'Email'

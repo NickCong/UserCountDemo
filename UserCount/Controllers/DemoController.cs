@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
@@ -81,11 +83,11 @@ namespace UserCount.Controllers
             {
                 string personalID = Guid.NewGuid().ToString();
                 string baseurl = ConfigurationManager.AppSettings["DomainURL"];
-                string sourceID = RouteData.Values["id"] !=null? RouteData.Values["id"].ToString(): ConfigurationManager.AppSettings["DomainSourceID"];
+                string sourceID = RouteData.Values["id"] != null ? RouteData.Values["id"].ToString() : ConfigurationManager.AppSettings["DomainSourceID"];
                 detail.result = true;
                 detail.email = email;
                 detail.password = enpassword;
-                detail.personalurl = baseurl + "/" + personalID+"/Home";              
+                detail.personalurl = baseurl + "/" + personalID + "/Home";
                 helper.CreateUser(email, enpassword, sourceID, personalID);
                 PostTOAPIInfo(email, sourceID, personalID);
                 if (detail.result)
@@ -100,33 +102,27 @@ namespace UserCount.Controllers
 
         private void PostTOAPIInfo(string email, string sourceID, string personalID)
         {
-
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(ConfigurationManager.AppSettings["APIURL"]);
-
-            req.Method = "POST";
-
-            req.ContentType = "application/x-www-form-urlencoded";
-
-            string parameters = string.Format("email={0}&personalID={1}&sourceID{2}", email, personalID, sourceID);
-
-            byte[] data = Encoding.UTF8.GetBytes(parameters);
-
-            req.ContentLength = data.Length;
-
-            using (Stream reqStream = req.GetRequestStream())
-
+            using (var wb = new WebClient())
             {
-
-                reqStream.Write(data, 0, data.Length);
-
-                reqStream.Close();
-
+                var data = new NameValueCollection();
+                data["email"] = email;
+                data["sourceID"] = sourceID;
+                data["personalID"] = personalID;
+                var response = wb.UploadValues(ConfigurationManager.AppSettings["APIURL"] + "/RegiserUserInfo", "POST", data);
+                string responseInString = Encoding.UTF8.GetString(response);
             }
+   //         HttpClient client = new HttpClient();
+   //         var values = new Dictionary<string, string>
+   //         { {"email", email},
+   //{ "sourceID", sourceID },
+   //{ "personalID", personalID }
+   //         };
 
-            HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+   //         var content = new FormUrlEncodedContent(values);
 
-            Stream stream = resp.GetResponseStream();
+   //         var response =  client.PostAsync(ConfigurationManager.AppSettings["APIURL"]+ "/RegiserUserInfo", content);
 
+   //         var responseString =  response.Result.Content.ReadAsStringAsync();
         }
 
         [HttpGet]

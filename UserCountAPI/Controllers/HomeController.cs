@@ -27,6 +27,7 @@ namespace UserCountAPI.Controllers
             return Json(info, JsonRequestBehavior.AllowGet);
         }
 
+        //[HttpGet]
         [HttpPost]
         public void RegiserUserInfo(string email, string personalID, string sourceID)
         {
@@ -53,9 +54,7 @@ namespace UserCountAPI.Controllers
         [HttpGet]
         public void Book(string sourceID, string useremail, string status)
         {
-            AWSDynamoDBHelper dbHelper = new AWSDynamoDBHelper();
-            string baseurl = ConfigurationManager.AppSettings["DomainURL"];
-            //string sourceID = RouteData.Values["id"] != null ? RouteData.Values["id"].ToString() : ConfigurationManager.AppSettings["DomainSourceID"];
+            AWSDynamoDBHelper dbHelper = new AWSDynamoDBHelper();           
             Document user = dbHelper.GetUser(useremail);
             if (user != null)
             {
