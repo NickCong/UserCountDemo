@@ -26,7 +26,7 @@ namespace UserCountAPI.Controllers
             client = new AmazonDynamoDBClient(Acceskey, Secretkey, ddbConfig);
             usertable = Table.LoadTable(client, TABLEName);
         }
-        public void UpdateSourceReference(Document user, string sourceID, string useremail, string status)
+        public void UpdateSourceReference(Document user, string sourceID, string useremail, string status, string btime)
         {
             if (sourceID.Equals(ConfigurationManager.AppSettings["DomainSourceID"], StringComparison.OrdinalIgnoreCase))
             {
@@ -46,7 +46,7 @@ namespace UserCountAPI.Controllers
                 {
                     PersonalID = ConfigurationManager.AppSettings["DomainSourceID"],
                     BStatus = status,
-                    BTime = DateTime.Now.ToString(),
+                    BTime = btime,
                     Email = ConfigurationManager.AppSettings["DomainSourceID"],
                 };
                 books.Add(newInfo);
@@ -104,7 +104,7 @@ namespace UserCountAPI.Controllers
                             {
                                 PersonalID = sourceID,
                                 BStatus = status,
-                                BTime = DateTime.Now.ToString(),
+                                BTime = btime,
                                 Email = email,
                             };
                             books.Add(newInfo);
@@ -425,7 +425,7 @@ namespace UserCountAPI.Controllers
 
             }
         }
-        public void UpdateReference(string currentEmail, string sourceID, string referenceID, string status)
+        public void UpdateReference(string currentEmail, string sourceID, string referenceID, string status, string btime)
         {
             try
             {
@@ -468,7 +468,7 @@ namespace UserCountAPI.Controllers
                         {
                             PersonalID = referenceID,
                             BStatus = status,
-                            BTime = DateTime.Now.ToString(),
+                            BTime = btime,
                             Email = currentEmail
                         };
                         books.Add(newInfo);
@@ -490,7 +490,7 @@ namespace UserCountAPI.Controllers
 
             }
         }
-        public void UpdateUpdateDomainReference(string currentEmail, string referenceID, string status)
+        public void UpdateUpdateDomainReference(string currentEmail, string referenceID, string status, string btime)
         {
             try
             {
@@ -511,7 +511,7 @@ namespace UserCountAPI.Controllers
                 {
                     PersonalID = referenceID,
                     BStatus = status,
-                    BTime = DateTime.Now.ToString(),
+                    BTime = btime,
                     Email = currentEmail
                 };
                 books.Add(newInfo);
@@ -557,48 +557,100 @@ namespace UserCountAPI.Controllers
             try
             {
                 Document user = GetUser(email);
+                string duplicateReference = user.ContainsKey("DuplicateReference") ? user["DuplicateReference"].AsString() : string.Empty;
                 string duplicateSourceReference = user.ContainsKey("DuplicateSourceReference") ? user["DuplicateSourceReference"].AsString() : string.Empty;
-                List<BookInfoInterface>  sourcebooks = JsonConvert.DeserializeObject<List<BookInfoInterface>>(duplicateSourceReference);
+                List<UpdateBookInfo> sourcebooks = JsonConvert.DeserializeObject<List<UpdateBookInfo>>(duplicateSourceReference);
+                List<UpdateBookInfo> books = JsonConvert.DeserializeObject<List<UpdateBookInfo>>(duplicateReference);
                 if (sourcebooks == null)
                 {
-                    sourcebooks = new List<BookInfoInterface>();
+                    sourcebooks = new List<UpdateBookInfo>();
                 }
-                for (int i=0;i< sourcebooks.Count; i++)
+                if (books == null)
                 {
-                    BookInfoInterface doc = sourcebooks[i];
-                    if (doc.Email.Equals(referenceEmail, StringComparison.OrdinalIgnoreCase)&& doc.BTime.Equals(BTime, StringComparison.OrdinalIgnoreCase))
+                    books = new List<UpdateBookInfo>();
+                }
+                string bTime = DateTime.Now.ToString();
+                for (int i = 0; i < books.Count; i++)
+                {
+                    UpdateBookInfo doc = books[i];
+                    if (doc.Email.Equals(referenceEmail, StringComparison.OrdinalIgnoreCase) && doc.BTime.Equals(BTime, StringComparison.OrdinalIgnoreCase))
                     {
-                        UpdateBookInfo updateinfo = new UpdateBookInfo()
-                        {
-                            Email = doc.Email,
-                            BTime = doc.BTime,
-                            BStatus = doc.BStatus,
-                            PersonalID = doc.PersonalID
-                        };
-                        updateinfo.TTime = DateTime.Now.ToString();
-                        updateinfo.TStatus = doc.BStatus.Equals("Y") ? "N" : "Y";
-                        sourcebooks[i] = updateinfo;
+                        doc.TTime = bTime;
+                        doc.BStatus = "N";
                         break;
                     }
                 }
-                string json = JsonConvert.SerializeObject(sourcebooks);
+                for (int i = 0; i < sourcebooks.Count; i++)
+                {
+                    UpdateBookInfo doc = books[i];
+                    if (doc.Email.Equals(referenceEmail, StringComparison.OrdinalIgnoreCase) && doc.BTime.Equals(BTime, StringComparison.OrdinalIgnoreCase))
+                    {
+                        doc.TTime = bTime;
+                        doc.BStatus = "N";
+                        break;
+                    }
+                }
+                string json = JsonConvert.SerializeObject(books);
+                string sourcejson = JsonConvert.SerializeObject(sourcebooks);
                 var updateRequest = new UpdateItemRequest
                 {
                     TableName = TABLEName,
                     Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = email } } },
                     ExpressionAttributeNames = new Dictionary<string, string> {
-                        { "#duplicateReference", "DuplicateReference" }
+                        { "#duplicateReference", "DuplicateReference" },
+                        { "#duplicateSourceReference", "DuplicateSourceReference" }
                     },
-                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newDuplicateReference", new AttributeValue { S = json } } },
-                    UpdateExpression = "SET #duplicateReference = :newDuplicateReference"
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> {
+                        { ":newDuplicateReference", new AttributeValue { S = json } },
+                        { ":newDuplicateSourceReference", new AttributeValue { S = sourcejson } }
+                    },
+                    UpdateExpression = "SET #duplicateReference = :newDuplicateReference,#duplicateSourceReference = :newDuplicateSourceReference"
                 };
                 client.UpdateItem(updateRequest);
+
+
             }
             catch (Exception e)
             {
 
             }
 
+        }
+        public int CountReferencePoint(string email, string validTime, string singlePoint, string timePeriod)
+        {
+            int sumpoint = 0;
+            try
+            {
+                int spoint = Convert.ToInt32(singlePoint);
+                if (spoint > 0)
+                {
+                    double dayperiod = Convert.ToDouble(timePeriod);
+                    DateTime timescope = Convert.ToDateTime(validTime);
+                    Document user = GetUser(email);
+                    string duplicateReference = user.ContainsKey("DuplicateReference") ? user["DuplicateReference"].AsString() : string.Empty;
+                    List<UpdateBookInfo> books = JsonConvert.DeserializeObject<List<UpdateBookInfo>>(duplicateReference);
+                    if (books == null)
+                    {
+                        books = new List<UpdateBookInfo>();
+                    }
+                    foreach (UpdateBookInfo info in books)
+                    {
+                        if (info.BStatus.Equals("Y", StringComparison.OrdinalIgnoreCase))
+                        {
+                            DateTime booktime = Convert.ToDateTime(info.BTime);
+                            if (booktime > timescope && DateTime.Now > booktime.AddDays(dayperiod))
+                            {
+                                sumpoint += spoint;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+            return sumpoint;
         }
     }
 }

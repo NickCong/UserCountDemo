@@ -105,25 +105,22 @@
                         }, {
                             field: 'ReferenceEmail',
                             title: 'Reference Email'
-                        //},
-                        //{
-                        //    field: 'PersonalID',
-                        //    title: 'Reference Personal ID'
-                        },{
+                            //},
+                            //{
+                            //    field: 'PersonalID',
+                            //    title: 'Reference Personal ID'
+                        }, {
                             field: 'BTime',
                             title: 'Time'
                         }, {
                             field: 'BStatus',
                             title: 'Status'
-                        
+
                         }, {
                             field: 'TTime',
-                            title: 'Transform Time'
+                            title: 'Cancel Time'
                         }, {
-                            field: 'TStatus',
-                            title: 'Transform Status'
-                        }, {
-                            title: "Action",
+                            title: "Cancel",
                             formatter: reportApp.FormatterTransform
                         }],
                     "data": sourcetable
@@ -136,9 +133,9 @@
         $("#admin-reftable-label").hide()
     },
 
-    FormatterTransform: function (value, row,index) {
-        if (row["TTime"] == null || row["TTime"] == undefined || row["TTime"] == '') {
-            return "<button onclick=\"reportApp.TransformReferenceStatus(this)\" title='Transform Stauts'><span class='glyphicon glyphicon-transfer'></span></button>";            
+    FormatterTransform: function (value, row, index) {
+        if (row["BStatus"] == null || row["BStatus"] == undefined || row["BStatus"] == 'Y') {
+            return "<button onclick=\"reportApp.TransformReferenceStatus(this)\" title='Transform Stauts'><span class='glyphicon glyphicon-transfer'></span></button>";
         } else {
             return "<span class='glyphicon glyphicon-ban-circle'></span>"
         }
@@ -151,8 +148,8 @@
         let APIurl = "http://localhost:51387/home/";
         $.ajax({
             type: "GET",
-            url: APIurl + 'TransformReferenceStatus',
-            data: { "email": email, "referenceEmail": referenceEmail, "BTime":BTime },
+            url: APIurl + 'CancelReference',
+            data: { "email": email, "referenceEmail": referenceEmail, "BTime": BTime },
             dataType: "json",
             success: function (data) {
                 window.location.reload();
@@ -232,7 +229,7 @@
                 sourcetable = sourcetable.concat(data.UserSourceReferenceSuccess);
                 sourcetable = sourcetable.concat(data.UserSourceReferenceFail);
                 $('#reftable').bootstrapTable({
-                   // "sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
+                    // "sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
                     "columns": [
                         {
                             field: 'PersonalUrl',
@@ -367,10 +364,86 @@
         }
     },
 
+    CalculatePoint: function () {
+        var bootstrapValidator = $('#userpointcount').data('bootstrapValidator');
+        bootstrapValidator.validate();
+        if (bootstrapValidator.isValid()) {
+            let APIurl = "http://localhost:51387/home/";
+            $.ajax({
+                type: "Get",
+                url: APIurl + 'CountReferencePoint',
+                data: { email: $('#detailemail').val(), validTime: $('#validtime').val(), singlePoint: $('#singlepoint').val(), timePeriod: $('#timeperiod').val() },
+                dataType: "json",
+                success: function (data) {
+                    $('#sumpoint').val(data);
+                }
+            });
+        }
+    },
+
+    InitCountPointForm: function () {
+        $('#userpointcount').bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                //invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                singlepoint: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The point cannot be empty'
+                        },
+                        regexp: {
+                            regexp: /^[0-9][0-9]*$/,
+                            message: 'The time period must be a number'
+                        }
+                    }
+                }
+                , validtime: {
+                    message: 'Password is invalid!',
+                    validators: {
+                        notEmpty: {
+                            message: 'The valid time cannot be empty!'
+                        },
+                        date: {
+                            format: 'YYYY/MM/DD hh:mm:ss',
+                            message: 'The valid time is not valid'
+                        }
+                    }
+                },
+                timeperiod: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The time period cannot be empty'
+                        },
+                        regexp: {
+                            regexp: /^[0-9][0-9]*$/,
+                            message: 'The time period must be a number'
+                        }
+                    }
+                }
+            }
+        })      
+
+        $("#validtime").datetimepicker({
+            format: 'yyyy/mm/dd hh:ii:ss',
+            weekStart: 1,
+            todayBtn: 1,//显示‘今日’按钮
+            autoclose: 1,
+            todayHighlight: 1,
+            startView: 2,
+            minView: 2,  //Number, String. 默认值：0, 'hour'，日期时间选择器所能够提供的最精确的时间选择视图。
+            clearBtn: true,//清除按钮
+            forceParse: 0
+        });
+    },
+
     init: function () {
         if ($('#hidden-permission').val() == 'admin') {
             reportApp.GetAllInfo();
             //reportApp.GetAllInfoCount();
+            reportApp.InitCountPointForm();
         }
         else {
             reportApp.GetCurrentUserReference($('#hidden-email').val());

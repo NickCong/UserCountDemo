@@ -1,8 +1,10 @@
 ﻿
 @Styles.Render("~/Content/CSS/report.css")
+@Styles.Render("~/Content/bootstrap-datetimepicker.css")
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
+
 <div id="reportpage">
     <input type="text" id="hidden-email" hidden />
     <input type="text" id="hidden-permission" hidden />
@@ -25,6 +27,16 @@
         </div>
     </div>*@
     @*<canvas id="reportpiechart"></canvas>*@
+    <form id="userpointcount" class="form-group">
+        <h2>User Point</h2>
+        <input type="number" class="form-control" id="singlepoint"  name="singlepoint" placeholder="Single Reference Point">
+        <input id="validtime" name="validtime" class="form-control" placeholder="Valid Time" type="text">
+        <input type="number" class="form-control" id="timeperiod" name="timeperiod" placeholder="Time Period">
+        <label for="timeperiod">days</label>
+        <button id="calculatepoint" onclick="reportApp.CalculatePoint()">Caculate</button>
+        <label for="sumpoint">Sum Point:</label>
+        <input type="number" class="form-control" id="sumpoint" disabled>
+    </form>
     @{
         if (ViewBag.role == "admin")
         {
@@ -74,4 +86,6 @@
     $('#hidden-email').val('@ViewBag.email')
      $('#hidden-permission').val('@ViewBag.role')
 </script>
+@Scripts.Render("~/Scripts/moment.min.js")
+@Scripts.Render("~/Scripts/bootstrap-datetimepicker.js")
 @Scripts.Render("~/Scripts/report/report.js")

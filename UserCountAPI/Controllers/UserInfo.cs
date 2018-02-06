@@ -43,14 +43,12 @@ namespace UserCountAPI.Controllers
         public string PersonalID { get; set; }
 
         public string TTime { get; set; }
-        public string TStatus { get; set; }
     }
 
     public class ShowBookInfo : BookInfoInterface
     {
         public string BStatus { get; set; }
         public string BTime { get; set; }
-        public string TStatus { get; set; }
         public string TTime { get; set; }
         public string Email { get; set; }
         public string PersonalID { get; set; }

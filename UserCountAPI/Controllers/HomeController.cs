@@ -60,26 +60,34 @@ namespace UserCountAPI.Controllers
             {
                 if (!user["PersonalID"].AsString().Equals(sourceID))
                 {
+                    string btime = DateTime.Now.ToString();
                     if (string.IsNullOrEmpty(sourceID) || sourceID.Equals(ConfigurationManager.AppSettings["DomainSourceID"], StringComparison.OrdinalIgnoreCase))
                     {
                         dbHelper.UpdateDomainBookCount(status, true);
-                        dbHelper.UpdateUpdateDomainReference(useremail, user["PersonalID"].AsString(), status);
+                        dbHelper.UpdateUpdateDomainReference(useremail, user["PersonalID"].AsString(), status, btime);
                     }
                     else
                     {
                         dbHelper.UpdateDomainBookCount(status, false);
-                        dbHelper.UpdateReference(useremail, sourceID, user["PersonalID"].AsString(), status);                       
+                        dbHelper.UpdateReference(useremail, sourceID, user["PersonalID"].AsString(), status, btime);                       
                     }
-                    dbHelper.UpdateSourceReference(user, sourceID, useremail, status);                  
+                    dbHelper.UpdateSourceReference(user, sourceID, useremail, status, btime);                  
                 }
             }
         }
         [HttpGet]
-        public JsonResult TransformReferenceStatus(string email, string referenceEmail, string BTime)
+        public JsonResult CancelReference(string email, string referenceEmail, string BTime)
         {
             AWSDynamoDBHelper dbHelper = new AWSDynamoDBHelper();
             dbHelper.TransformReferenceStatus(email, referenceEmail, BTime);
             return Json(true, JsonRequestBehavior.AllowGet);
+        }
+        [HttpGet]
+        public JsonResult CountReferencePoint(string email, string validTime, string singlePoint, string timePeriod)
+        {
+            AWSDynamoDBHelper dbHelper = new AWSDynamoDBHelper();
+            int count = dbHelper.CountReferencePoint(email, validTime, singlePoint, timePeriod);
+            return Json(count, JsonRequestBehavior.AllowGet);
         }
     }
 }
