@@ -74,6 +74,12 @@ namespace UserCountAPI.Controllers
                 }
             }
         }
-
+        [HttpGet]
+        public JsonResult TransformReferenceStatus(string email, string referenceEmail, string BTime)
+        {
+            AWSDynamoDBHelper dbHelper = new AWSDynamoDBHelper();
+            dbHelper.TransformReferenceStatus(email, referenceEmail, BTime);
+            return Json(true, JsonRequestBehavior.AllowGet);
+        }
     }
 }

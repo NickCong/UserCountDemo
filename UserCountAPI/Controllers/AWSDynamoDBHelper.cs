@@ -90,7 +90,7 @@ namespace UserCountAPI.Controllers
                             string email = doc["Email"] != null ? doc["Email"].AsString() : string.Empty;
                             List<string> sourceReference = user.ContainsKey("SourceReference") ? user["SourceReference"].AsListOfString() : new List<string>();
                             string duplicateReference = user.ContainsKey("DuplicateSourceReference") ? user["DuplicateSourceReference"].AsString() : string.Empty;
-                            if (!string.IsNullOrEmpty(sourceID)&&!sourceReference.Contains(sourceID))
+                            if (!string.IsNullOrEmpty(sourceID) && !sourceReference.Contains(sourceID))
                             {
                                 sourceReference.Add(sourceID);
                             }
@@ -128,7 +128,8 @@ namespace UserCountAPI.Controllers
             }
         }
 
-        public void UpdateDomainBookCount(string status, bool isdomain) {
+        public void UpdateDomainBookCount(string status, bool isdomain)
+        {
             string key = string.Empty;
             int value = 0;
             Document domain = GetUser(ConfigurationManager.AppSettings["DomainSourceID"]);
@@ -193,7 +194,7 @@ namespace UserCountAPI.Controllers
             }
             return referenceInfo;
         }
-        public ReferenceInfo GetUserReference(string email,bool filterAdmin=true)
+        public ReferenceInfo GetUserReference(string email, bool filterAdmin = true)
         {
             ReferenceInfo referenceInfo = new ReferenceInfo();
             referenceInfo.UserReferenceFail = new List<ShowBookInfo>();
@@ -272,7 +273,7 @@ namespace UserCountAPI.Controllers
             catch (Exception e)
             { }
         }
-        public ReferenceInfo GetAllUserReference(bool filterAdmin=true)
+        public ReferenceInfo GetAllUserReference(bool filterAdmin = true)
         {
             ReferenceInfo referenceInfo = new ReferenceInfo();
             referenceInfo.UserReferenceFail = new List<ShowBookInfo>();
@@ -356,7 +357,7 @@ namespace UserCountAPI.Controllers
                 {
 
                 }
-                
+
             }
             catch (Exception e)
             {
@@ -384,7 +385,7 @@ namespace UserCountAPI.Controllers
                     try
                     {
                         docList = search.GetNextSet();
-                        usercount +=docList.Count;
+                        usercount += docList.Count;
                     }
                     catch (Exception ex)
                     {
@@ -452,7 +453,7 @@ namespace UserCountAPI.Controllers
                     {
                         string email = doc["Email"] != null ? doc["Email"].AsString() : string.Empty;
                         List<string> reference = doc.ContainsKey("Reference") ? doc["Reference"].AsListOfString() : new List<string>();
-                        string duplicateReference = doc.ContainsKey("DuplicateReference") ? doc["DuplicateReference"].AsString():string.Empty;
+                        string duplicateReference = doc.ContainsKey("DuplicateReference") ? doc["DuplicateReference"].AsString() : string.Empty;
                         if (!string.IsNullOrEmpty(email) && !reference.Contains(referenceID))
                         {
                             reference.Add(referenceID);
@@ -477,7 +478,7 @@ namespace UserCountAPI.Controllers
                             TableName = TABLEName,
                             Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = email } } },
                             ExpressionAttributeNames = new Dictionary<string, string> { { "#reference", "Reference" }, { "#duplicateReference", "DuplicateReference" } },
-                            ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } }, { ":newDuplicateReference", new AttributeValue {  S = json } } },
+                            ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } }, { ":newDuplicateReference", new AttributeValue { S = json } } },
                             UpdateExpression = "SET #reference = :newReference,#duplicateReference = :newDuplicateReference"
                         };
                         client.UpdateItem(sourceRequest);
@@ -516,8 +517,8 @@ namespace UserCountAPI.Controllers
                 books.Add(newInfo);
                 string json = JsonConvert.SerializeObject(books);
                 // var item = Document.FromJson(json);
-                
-                 var updateRequest = new UpdateItemRequest
+
+                var updateRequest = new UpdateItemRequest
                 {
                     TableName = TABLEName,
                     Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = ConfigurationManager.AppSettings["DomainSourceID"] } } },
@@ -525,7 +526,7 @@ namespace UserCountAPI.Controllers
                         { "#reference", "Reference" },
                         { "#duplicateReference", "DuplicateReference" }
                     },
-                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } }, { ":newDuplicateReference", new AttributeValue { S = json} } },
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newReference", new AttributeValue { SS = reference } }, { ":newDuplicateReference", new AttributeValue { S = json } } },
                     UpdateExpression = "SET #reference = :newReference,#duplicateReference = :newDuplicateReference"
                 };
                 client.UpdateItem(updateRequest);
@@ -550,6 +551,54 @@ namespace UserCountAPI.Controllers
             {
                 return null;
             }
-        }       
+        }
+        public void TransformReferenceStatus(string email, string referenceEmail, string BTime)
+        {
+            try
+            {
+                Document user = GetUser(email);
+                string duplicateSourceReference = user.ContainsKey("DuplicateSourceReference") ? user["DuplicateSourceReference"].AsString() : string.Empty;
+                List<BookInfoInterface>  sourcebooks = JsonConvert.DeserializeObject<List<BookInfoInterface>>(duplicateSourceReference);
+                if (sourcebooks == null)
+                {
+                    sourcebooks = new List<BookInfoInterface>();
+                }
+                for (int i=0;i< sourcebooks.Count; i++)
+                {
+                    BookInfoInterface doc = sourcebooks[i];
+                    if (doc.Email.Equals(referenceEmail, StringComparison.OrdinalIgnoreCase)&& doc.BTime.Equals(BTime, StringComparison.OrdinalIgnoreCase))
+                    {
+                        UpdateBookInfo updateinfo = new UpdateBookInfo()
+                        {
+                            Email = doc.Email,
+                            BTime = doc.BTime,
+                            BStatus = doc.BStatus,
+                            PersonalID = doc.PersonalID
+                        };
+                        updateinfo.TTime = DateTime.Now.ToString();
+                        updateinfo.TStatus = doc.BStatus.Equals("Y") ? "N" : "Y";
+                        sourcebooks[i] = updateinfo;
+                        break;
+                    }
+                }
+                string json = JsonConvert.SerializeObject(sourcebooks);
+                var updateRequest = new UpdateItemRequest
+                {
+                    TableName = TABLEName,
+                    Key = new Dictionary<string, AttributeValue> { { "Email", new AttributeValue { S = email } } },
+                    ExpressionAttributeNames = new Dictionary<string, string> {
+                        { "#duplicateReference", "DuplicateReference" }
+                    },
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":newDuplicateReference", new AttributeValue { S = json } } },
+                    UpdateExpression = "SET #duplicateReference = :newDuplicateReference"
+                };
+                client.UpdateItem(updateRequest);
+            }
+            catch (Exception e)
+            {
+
+            }
+
+        }
     }
 }

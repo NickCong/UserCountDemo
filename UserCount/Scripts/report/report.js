@@ -2,7 +2,7 @@
 
     AllUser: [],
 
-    GetCurrentInfo: function () {
+    GetAllInfoCount: function () {
         let APIurl = "http://localhost:51387/home/";
         let DomainURl = "http://localhost:51359/Demo/"
         var refid = window.location.href.slice(DomainURl.length).split('/')[0]
@@ -81,6 +81,7 @@
 
     GetAllInfo: function () {
         reportApp.GetAllUserEmail();
+        reportApp.GetAllUserReference();
     },
 
     GetAllUserReference: function () {
@@ -104,12 +105,17 @@
                         }, {
                             field: 'ReferenceEmail',
                             title: 'Reference Email'
-                        }, {
+                        //},
+                        //{
+                        //    field: 'PersonalID',
+                        //    title: 'Reference Personal ID'
+                        },{
                             field: 'BTime',
                             title: 'Time'
                         }, {
                             field: 'BStatus',
                             title: 'Status'
+                        
                         }, {
                             field: 'TTime',
                             title: 'Transform Time'
@@ -118,7 +124,7 @@
                             title: 'Transform Status'
                         }, {
                             title: "Action",
-                            formatter: reportApp.FormatterTransform()
+                            formatter: reportApp.FormatterTransform
                         }],
                     "data": sourcetable
                 });
@@ -130,66 +136,26 @@
         $("#admin-reftable-label").hide()
     },
 
-    FormatterTransform: function (value, row) {
+    FormatterTransform: function (value, row,index) {
         if (row["TTime"] == null || row["TTime"] == undefined || row["TTime"] == '') {
-            return "<span class='glyphicon glyphicon-ban-circle'></span>"
+            return "<button onclick=\"reportApp.TransformReferenceStatus(this)\" title='Transform Stauts'><span class='glyphicon glyphicon-transfer'></span></button>";            
         } else {
-            return "<button click=\"reportApp.TransformReferenceStatus(this)\" title='Transform Stauts'><span class='glyphicon glyphicon-transfer'></span></button>";
+            return "<span class='glyphicon glyphicon-ban-circle'></span>"
         }
     },
 
     TransformReferenceStatus: function (event) {
+        let email = event.parentElement.parentElement.firstElementChild.innerText
+        let referenceEmail = event.parentElement.parentElement.children[1].innerText
+        let BTime = event.parentElement.parentElement.children[2].innerText
         let APIurl = "http://localhost:51387/home/";
         $.ajax({
             type: "GET",
             url: APIurl + 'TransformReferenceStatus',
-            data: { "useremail": email },
+            data: { "email": email, "referenceEmail": referenceEmail, "BTime":BTime },
             dataType: "json",
             success: function (data) {
-                $("#admin-reftable").bootstrapTable('destroy');
-                $("#admin-soutable").bootstrapTable('destroy');
-                var reftable = [];
-                reftable = reftable.concat(data.UserReferenceSuccess);
-                reftable = reftable.concat(data.UserReferenceFail);
-                var sourcetable = [];
-                sourcetable = sourcetable.concat(data.UserSourceReferenceSuccess);
-                sourcetable = sourcetable.concat(data.UserSourceReferenceFail);
-                $('#admin-reftable').bootstrapTable({
-                    "sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
-                    "columns": [
-                        {
-                            field: 'Email',
-                            title: 'Email'
-                        }, {
-                            field: 'PersonalID',
-                            title: 'Personal ID'
-                        }, {
-                            field: 'BTime',
-                            title: 'Time'
-                        }, {
-                            field: 'BStatus',
-                            title: 'Status'
-                        }],
-                    "data": reftable
-                });
-                $('#admin-soutable').bootstrapTable({
-                    "sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
-                    "columns": [
-                        {
-                            field: 'Email',
-                            title: 'Email'
-                        }, {
-                            field: 'PersonalID',
-                            title: 'Personal ID'
-                        }, {
-                            field: 'BTime',
-                            title: 'Time'
-                        }, {
-                            field: 'BStatus',
-                            title: 'Status'
-                        }],
-                    "data": sourcetable
-                });
+                window.location.reload();
             }
         })
     },
@@ -211,7 +177,7 @@
                 sourcetable = sourcetable.concat(data.UserSourceReferenceSuccess);
                 sourcetable = sourcetable.concat(data.UserSourceReferenceFail);
                 $('#admin-reftable').bootstrapTable({
-                    "sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
+                    //"sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
                     "columns": [
                         {
                             field: 'Email',
@@ -229,8 +195,71 @@
                     "data": reftable
                 });
                 $('#admin-soutable').bootstrapTable({
-                    "sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
+                    //"sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
                     "columns": [
+                        {
+                            field: 'Email',
+                            title: 'Email'
+                        }, {
+                            field: 'PersonalID',
+                            title: 'Personal ID'
+                        }, {
+                            field: 'BTime',
+                            title: 'Time'
+                        }, {
+                            field: 'BStatus',
+                            title: 'Status'
+                        }],
+                    "data": sourcetable
+                });
+            }
+        })
+    },
+    GetCurrentUserReference: function (email) {
+        let APIurl = "http://localhost:51387/home/";
+        $.ajax({
+            type: "GET",
+            url: APIurl + 'GetUserReference',
+            data: { "useremail": email },
+            dataType: "json",
+            success: function (data) {
+                $("#reftable").bootstrapTable('destroy');
+                $("#soutable").bootstrapTable('destroy');
+                var reftable = [];
+                reftable = reftable.concat(data.UserReferenceSuccess);
+                reftable = reftable.concat(data.UserReferenceFail);
+                var sourcetable = [];
+                sourcetable = sourcetable.concat(data.UserSourceReferenceSuccess);
+                sourcetable = sourcetable.concat(data.UserSourceReferenceFail);
+                $('#reftable').bootstrapTable({
+                   // "sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
+                    "columns": [
+                        {
+                            field: 'PersonalUrl',
+                            title: 'Personal Url'
+                        },
+                        {
+                            field: 'Email',
+                            title: 'Email'
+                        }, {
+                            field: 'PersonalID',
+                            title: 'Personal ID'
+                        }, {
+                            field: 'BTime',
+                            title: 'Time'
+                        }, {
+                            field: 'BStatus',
+                            title: 'Status'
+                        }],
+                    "data": reftable
+                });
+                $('#soutable').bootstrapTable({
+                    //"sortName": ['BTime', 'Email', 'ReferenceEmail', 'BStatus'],
+                    "columns": [
+                        {
+                            field: 'PersonalUrl',
+                            title: 'Personal Url'
+                        },
                         {
                             field: 'Email',
                             title: 'Email'
@@ -341,10 +370,10 @@
     init: function () {
         if ($('#hidden-permission').val() == 'admin') {
             reportApp.GetAllInfo();
-            reportApp.GetCurrentInfo();
+            //reportApp.GetAllInfoCount();
         }
         else {
-            reportApp.GetChooseUserReference($('#hidden-email').val());
+            reportApp.GetCurrentUserReference($('#hidden-email').val());
         }
     }
 }
